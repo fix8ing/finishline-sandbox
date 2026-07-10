@@ -8,7 +8,7 @@
 use sandbox::Config;
 
 fn main() {
-    let config = Config::new("default", 2);
+    let config    =    Config::new("default", 2);
     println!("{}", config.describe());
     if config.is_retrying() {
         println!("retries enabled: {}", config.retries);
