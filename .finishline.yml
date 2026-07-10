@@ -1,0 +1,16 @@
+lint:
+  - name: fmt
+    fix: ["cargo", "fmt"]
+  - name: clippy
+    fix: ["cargo", "clippy", "--fix", "--allow-dirty", "--allow-staged", "--all-targets"]
+test_fix:
+  enabled: true
+  max_attempts: 2
+  max_diff_lines: 40
+  allowed_paths: ["tests/**", "src/**"]
+  compile_errors_only: true
+automerge:
+  enabled: true
+  method: squash
+  direct_merge_fallback: false
+attempts_per_pr: 3
