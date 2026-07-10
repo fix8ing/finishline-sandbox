@@ -1,15 +1,16 @@
 # finishline-sandbox
 
 A throwaway Rust repository for end-to-end testing the **finishline** CI-autofix
-GitHub App. finishline watches `workflow_run` webhooks and reacts to failing
-checks:
+GitHub App. You review a PR and **arm GitHub's native auto-merge** (`gh pr merge
+--auto`); that is finishline's cue. On armed PRs it reacts to failing checks:
 
 - **lint failure** (`fmt` / `clippy`) → it pushes a `cargo fmt` / `cargo clippy
   --fix`-style commit.
 - **test-compile failure** → a constrained agent pushes a minimal fix.
-- **all checks green** → it enables auto-merge.
+- **all checks green** → the bot does nothing; GitHub's auto-merge merges the PR.
 
-This repo exists to stage each of those failure classes on demand.
+The bot never merges — it only clears CI. This repo exists to stage each of those
+failure classes on demand.
 
 ## Layout
 
@@ -50,8 +51,9 @@ with `gh`. Run them from the repo root on an up-to-date `main`.
 
 ### (a) scenario-fmt — breaks formatting only
 
-Only the `fmt` job fails; `clippy` and `test` stay green. finishline should push
-a `cargo fmt` commit, turning all checks green and enabling auto-merge.
+Only the `fmt` job fails; `clippy` and `test` stay green. Arm auto-merge, and
+finishline should push a `cargo fmt` commit, turning all checks green so GitHub
+auto-merges.
 
 ```bash
 git checkout main && git pull
@@ -60,7 +62,8 @@ perl -i -pe 's/let config = Config::new/let config    =    Config::new/' src/mai
 git add -A && git commit -m "scenario-fmt: break rustfmt only"
 git push -u origin scenario-fmt
 gh pr create --title "scenario-fmt: formatting failure" \
-  --body "Breaks only the fmt check. finishline should push a cargo fmt fix, then automerge."
+  --body "Breaks only the fmt check. finishline should push a cargo fmt fix; GitHub then auto-merges."
+gh pr merge --auto --squash   # arm auto-merge — finishline's cue
 ```
 
 ### (b) scenario-testfix — breaks test compilation
@@ -93,13 +96,14 @@ PY
 git add -A && git commit -m "scenario-testfix: add Config.verbose, break test compile"
 git push -u origin scenario-testfix
 gh pr create --title "scenario-testfix: test-compile failure" \
-  --body "Adds Config.verbose but not to tests/integration.rs. finishline's test-fix agent should repair the struct literal, then automerge."
+  --body "Adds Config.verbose but not to tests/integration.rs. finishline's test-fix agent should repair the struct literal; GitHub then auto-merges."
+gh pr merge --auto --squash   # arm auto-merge — finishline's cue
 ```
 
 ### (c) scenario-clean — trivial green change
 
-A harmless change that keeps every job green, to verify plain auto-merge with no
-autofix involved.
+A harmless change that keeps every job green, to verify GitHub's auto-merge
+completes with no autofix involved.
 
 ```bash
 git checkout main && git pull
@@ -108,7 +112,8 @@ perl -i -pe 's/"default"/"clean-demo"/' src/main.rs
 git add -A && git commit -m "scenario-clean: trivial green change"
 git push -u origin scenario-clean
 gh pr create --title "scenario-clean: green change" \
-  --body "All checks pass. finishline should enable auto-merge directly."
+  --body "All checks pass. Arm auto-merge and GitHub should merge with no bot action."
+gh pr merge --auto --squash   # arm auto-merge — GitHub merges once green
 ```
 
 ## Local verification
