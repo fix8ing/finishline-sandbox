@@ -15,6 +15,8 @@ pub struct Config {
     pub name: String,
     /// Number of times an operation should be retried.
     pub retries: u32,
+    /// Whether verbose logging is enabled.
+    pub verbose: bool,
 }
 
 impl Config {
@@ -23,6 +25,7 @@ impl Config {
         Self {
             name: name.into(),
             retries,
+            verbose: false,
         }
     }
 
